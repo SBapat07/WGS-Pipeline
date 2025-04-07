@@ -1,0 +1,2 @@
+cut_right_window_size = 4
+cut_right_mean_quality = 20
