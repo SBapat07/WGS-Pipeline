@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
 from datetime import datetime
+from matplotlib.animation import FuncAnimation
 
 # ---------------------- Utility functions ----------------------
 
@@ -17,22 +18,34 @@ def fig_to_base64(fig):
 
 def generate_shannon_gauge(value):
     fig, ax = plt.subplots(figsize=(6, 4), subplot_kw={'projection': 'polar'})
-    ax.set_theta_offset(np.pi)
-    ax.set_theta_direction(-1)
+    ax.set_theta_offset(np.pi)  # Start at the top (180°)
+    ax.set_theta_direction(-1)  # Clockwise direction
     ax.set_yticklabels([])
     ax.set_xticks([])
     ax.set_thetamin(0)
     ax.set_thetamax(180)
     ax.set_facecolor('white')
+    ax.text(np.pi * (0.75/5), 1.2, 'Low', ha='center', va='center', fontsize=8, color='red')
+    ax.text(np.pi * (2.5/5), 1.2, 'Moderate', ha='center', va='center', fontsize=8, color='orange')
+    ax.text(np.pi * (4.25/5), 1.2, 'High', ha='center', va='center', fontsize=8, color='green')
+    
 
-    # Shannon diversity ranges (custom)
-    color_ranges = [(0.0, 0.3, '#f44336'), (0.3, 0.7, '#ffeb3b'), (0.7, 1.0, '#4caf50')]
+
+    # Correct color sequence: RED -> YELLOW -> GREEN
+    color_ranges = [
+        (0, 1.5, '#f44336'),   # Red
+        (1.5, 3.5, '#ffeb3b'), # Yellow
+        (3.5, 5.0, '#4caf50')  # Green
+    ]
+
     for start, end, color in color_ranges:
-        theta = np.linspace(start * np.pi, end * np.pi, 30)
+        theta_start = (start / 5) * np.pi  # LEFT side
+        theta_end = (end / 5) * np.pi       # RIGHT side
+        theta = np.linspace(theta_start, theta_end, 30)
         ax.plot(theta, [1] * len(theta), color=color, linewidth=10)
 
-    # Normalize based on max 5
-    angle = (1 - value / 5) * np.pi
+    # Draw the needle
+    angle = (value / 5) * np.pi
     ax.plot([angle, angle], [0, 1], color='black', linewidth=3)
 
     fig.subplots_adjust(bottom=0.3)
@@ -41,24 +54,37 @@ def generate_shannon_gauge(value):
 
     return f'<div style="margin: 30px auto; text-align:center;"><img src="data:image/png;base64,{fig_to_base64(fig)}" style="max-width:350px;"></div>'
 
+
 def generate_simpson_gauge(value):
-    scaled_value = value * 5  # Scale to match 0–5 display
     fig, ax = plt.subplots(figsize=(6, 4), subplot_kw={'projection': 'polar'})
-    ax.set_theta_offset(np.pi)
-    ax.set_theta_direction(-1)
+    ax.set_theta_offset(np.pi)  # Start at top
+    ax.set_theta_direction(-1)  # Clockwise
     ax.set_yticklabels([])
     ax.set_xticks([])
     ax.set_thetamin(0)
     ax.set_thetamax(180)
     ax.set_facecolor('white')
 
-    # Simpson diversity ranges
-    color_ranges = [(0.0, 0.3, '#f44336'), (0.3, 0.7, '#ffeb3b'), (0.7, 1.0, '#4caf50')]
+    # Labels for Low / Moderate / High
+    ax.text(np.pi * (0.15/1), 1.2, 'Low', ha='center', va='center', fontsize=8, color='red')
+    ax.text(np.pi * (0.5/1), 1.2, 'Moderate', ha='center', va='center', fontsize=8, color='orange')
+    ax.text(np.pi * (0.85/1), 1.2, 'High', ha='center', va='center', fontsize=8, color='green')
+
+    # Color ranges directly for 0–1
+    color_ranges = [
+        (0.0, 0.3, '#f44336'),   # Red
+        (0.3, 0.7, '#ffeb3b'),   # Yellow
+        (0.7, 1.0, '#4caf50')    # Green
+    ]
+
     for start, end, color in color_ranges:
-        theta = np.linspace(start * np.pi, end * np.pi, 30)
+        theta_start = start * np.pi  # start mapped to [0, π]
+        theta_end = end * np.pi
+        theta = np.linspace(theta_start, theta_end, 30)
         ax.plot(theta, [1] * len(theta), color=color, linewidth=10)
 
-    angle = (1 - scaled_value / 5) * np.pi
+    # Draw the needle
+    angle = value * np.pi  # direct mapping
     ax.plot([angle, angle], [0, 1], color='black', linewidth=3)
 
     fig.subplots_adjust(bottom=0.3)
@@ -68,33 +94,43 @@ def generate_simpson_gauge(value):
     return f'<div style="margin: 30px auto; text-align:center;"><img src="data:image/png;base64,{fig_to_base64(fig)}" style="max-width:350px;"></div>'
 
 def generate_fb_ratio_gauge(value):
-    # Scale F/B value for gauge display (we assume 10 as max for scaling)
+    # Scale F/B value for gauge display (use 10 as reference max)
     scaled_value = min(value / 10, 1.0)  # Normalize to 0–1 range
     fig, ax = plt.subplots(figsize=(6, 4), subplot_kw={'projection': 'polar'})
-    ax.set_theta_offset(np.pi)
-    ax.set_theta_direction(-1)
+    ax.set_theta_offset(np.pi)  # Start from top
+    ax.set_theta_direction(-1)  # Clockwise
     ax.set_yticklabels([])
     ax.set_xticks([])
     ax.set_thetamin(0)
     ax.set_thetamax(180)
     ax.set_facecolor('white')
 
+    # Add labels
+    ax.text(np.pi * (0.15/1), 1.2, 'Low', ha='center', va='center', fontsize=8, color='red')
+    ax.text(np.pi * (0.5/1), 1.2, 'Normal', ha='center', va='center', fontsize=8, color='orange')
+    ax.text(np.pi * (0.85/1), 1.2, 'High', ha='center', va='center', fontsize=8, color='green')
+
     # Color-coded ranges (red-yellow-green)
-    color_ranges = [(0.0, 0.3, '#f44336'), (0.3, 0.7, '#ffeb3b'), (0.7, 1.0, '#4caf50')]
+    color_ranges = [
+        (0.0, 0.3, '#f44336'),   # Red (Low F/B ratio)
+        (0.3, 0.7, '#ffeb3b'),   # Yellow (Normal)
+        (0.7, 1.0, '#4caf50')    # Green (High or Very High)
+    ]
     for start, end, color in color_ranges:
         theta = np.linspace(start * np.pi, end * np.pi, 30)
         ax.plot(theta, [1] * len(theta), color=color, linewidth=10)
 
-    # Needle
-    angle = scaled_value * np.pi  # Full right (good) is π, full left is 0
+    # Draw the needle
+    angle = scaled_value * np.pi
     ax.plot([angle, angle], [0, 1], color='black', linewidth=3)
 
-    # Text annotations
+    # Display exact F/B ratio value
     fig.subplots_adjust(bottom=0.3)
     fig.text(0.5, 0.1, f"{value:.3f}", ha='center', va='center', fontsize=12)
     fig.text(0.5, 0.05, "F/B Ratio", ha='center', va='center', fontsize=11)
 
     return f'<div style="margin: 30px auto; text-align:center;"><img src="data:image/png;base64,{fig_to_base64(fig)}" style="max-width:350px;"></div>'
+
 
 
 
@@ -358,7 +394,7 @@ a {{
 <div class="date-time">{date}</div>  <!-- Display Date Here -->
 
 <!-- Company Logo -->
-<img src="company_logo.png" alt="Company Logo" class="logo">
+{img_tag}
 
 <div class='toc'>
     <h3>🧭 Table of Contents</h3>
