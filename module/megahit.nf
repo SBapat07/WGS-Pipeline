@@ -2,7 +2,7 @@ process MEGAHIT {
 
 tag "${reads.baseName}"
 
-container 'nanozoo/megahit:latest'
+container 'wgs-pipeline:latest'
 
 publishDir params.megahitresult, mode: 'copy'
 

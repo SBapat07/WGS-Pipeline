@@ -2,7 +2,7 @@ process KRONA{
 
 tag "${file.baseName}"
 
-container 'staphb/krona:latest'
+container 'wgs-pipeline:latest'
 
 publishDir "${params.metaphlanresult}/${file.baseName}", mode: 'copy'
 
