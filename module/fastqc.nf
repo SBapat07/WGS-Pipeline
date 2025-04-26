@@ -1,7 +1,7 @@
 process FASTQC {
     tag "$fastq.baseName"
     
-    container 'biocontainers/fastqc:v0.11.9_cv8'
+    container 'wgs-pipeline:latest'
     
     publishDir "${params.qcresult}/${fastq.baseName}", mode: 'copy'
     
@@ -18,3 +18,4 @@ process FASTQC {
  
     """
 }
+

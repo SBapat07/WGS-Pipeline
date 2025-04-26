@@ -1,7 +1,7 @@
 process ALIGNMENT {
     tag "${reads.baseName}"
     
-    container = null
+    container null
 
     publishDir "${params.bwaresult}/${reads.baseName}", mode: 'copy'
 
@@ -15,7 +15,6 @@ process ALIGNMENT {
     script:
     """
     # Alignment using BWA
-    bwa mem /home/ghadmin/Desktop/WGS_Pipeline/modules/GRCh37.fa ${reads} > ${reads.baseName}_aligned.sam
+    bwa mem /home/ghadmin/Desktop/WGS_Pipeline/GRCh37.fa ${reads} > ${reads.baseName}_aligned.sam
     """
 }
-

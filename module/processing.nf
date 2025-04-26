@@ -1,7 +1,7 @@
 process PROCESS_BAM {
     tag "${aligned_sam.baseName}"
 
-    container 'staphb/samtools:latest'  // Runs only Samtools
+    container 'wgs-pipeline:latest'  // Runs only Samtools
 
     publishDir "${params.bwaresult}/${aligned_sam.baseName}", mode: 'copy'
 
