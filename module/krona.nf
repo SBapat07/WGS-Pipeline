@@ -4,7 +4,7 @@ tag "${file.baseName}"
 
 container 'wgs-pipeline:latest'
 
-publishDir "${params.metaphlanresult}/${file.baseName}", mode: 'copy'
+publishDir "${params.kronaresult}/${file.baseName}", mode: 'copy'
 
 input:
  path file

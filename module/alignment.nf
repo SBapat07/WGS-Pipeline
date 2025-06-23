@@ -15,6 +15,6 @@ process ALIGNMENT {
     script:
     """
     # Alignment using BWA
-    bwa mem /home/ghadmin/Desktop/WGS_Pipeline/GRCh37.fa ${reads} > ${reads.baseName}_aligned.sam
+    bwa mem -t 16 /home/rdadmin/Desktop/ShreyasWGS_Pipeline/WGS_Pipeline/GRCh37.fa ${reads} > ${reads.baseName}_aligned.sam
     """
 }
