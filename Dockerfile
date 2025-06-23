@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH=/opt/conda/bin:$PATH
 
-# Install system utilities and Python dependencies
+# Install system and R dependencies
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -17,11 +17,13 @@ RUN apt-get update && apt-get install -y \
     libsm6 \
     libxrender1 \
     nano \
+    build-essential \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
     python3 \
     python3-pip \
-    python3-matplotlib \
-    python3-pandas \
-    python3-numpy \
+    r-base \
     && apt-get clean
 
 # Install Miniconda
@@ -36,7 +38,7 @@ RUN conda config --add channels defaults && \
     conda config --add channels conda-forge && \
     conda config --set channel_priority strict
 
-# Install bioinformatics tools via Conda
+# Install bioinformatics tools and Python dependencies
 RUN conda install -y \
     fastqc \
     trimmomatic \
@@ -52,16 +54,19 @@ RUN conda install -y \
     matplotlib && \
     conda clean -afy
 
-
 # Link Krona manually (if needed)
 RUN ln -s /opt/conda/bin/ktImportText /usr/local/bin/ktImportText || true
 
-# Create pipeline working directory
-WORKDIR /pipeline
+# Install R packages and MelonnPan
+RUN R -e "install.packages(c('devtools', 'optparse', 'data.table', 'doParallel', 'foreach', 'ggplot2', 'MatrixStats', 'ROCR', 'pheatmap'), repos='https://cloud.r-project.org')" && \
+    R -e "if (!requireNamespace('BiocManager', quietly = TRUE)) install.packages('BiocManager', repos='https://cloud.r-project.org')" && \
+    R -e "BiocManager::install('AssocTests')" && \
+    R -e "devtools::install_github('biobakery/melonnpan')"
 
-# Set default working directory when container runs
+# Set up default working directories
+WORKDIR /pipeline
 WORKDIR /data
 
-# Set default command
+# Default command
 CMD ["bash"]
 
